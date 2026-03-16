@@ -1,0 +1,1788 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LocalConnect – Your Community Super App</title>
+  <meta name="description" content="LocalConnect combines neighborhood social networking, local services marketplace, and emergency safety into one futuristic community super-app." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <!-- MapLibre GL JS -->
+  <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+  <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+  <link rel="stylesheet" th:href="@{/css/localconnect.css}" />
+</head>
+<body>
+<!-- ═══════════════════════════════════════════════════════════
+     PARTICLE CANVAS BACKGROUND
+═══════════════════════════════════════════════════════════ -->
+<canvas id="particleCanvas"></canvas>
+<div class="grid-overlay"></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     GLASSMORPHIC NAVIGATION
+═══════════════════════════════════════════════════════════ -->
+<nav class="glass-nav" id="mainNav">
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <svg class="logo-svg" width="36" height="36" viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Light background to ensure dark logo colors pop on dark theme -->
+        <rect width="120" height="100" rx="24" fill="#C1D1D8" />
+        <g transform="translate(0, 10)">
+          <!-- Heads -->
+          <circle cx="30" cy="22" r="11" fill="#293625"/>
+          <circle cx="60" cy="22" r="11" fill="#FAF3D9"/>
+          <circle cx="90" cy="22" r="11" fill="#347653"/>
+          <!-- Bodies mimicking the overlapping W shape -->
+          <path d="M 19 38 C 19 38 10 70 30 82 C 45 90 55 65 55 65 C 55 65 42 35 30 38 C 25 39 19 38 19 38 Z" fill="#4F6739" />
+          <path d="M 40 65 C 45 90 75 90 80 65 C 85 40 65 30 60 30 C 55 30 35 40 40 65 Z" fill="#CC7F44" />
+          <path d="M 55 60 C 60 45 78 38 85 50 C 95 68 75 88 68 75 C 62 62 50 70 55 60 Z" fill="#FAF3D9" />
+          <path d="M 101 38 C 101 38 110 70 90 82 C 75 90 65 65 65 65 C 65 65 78 35 90 38 C 95 39 101 38 101 38 Z" fill="#439268" />
+        </g>
+      </svg>
+      <span class="logo-text">Local<span class="logo-accent">Connect</span></span>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#hero" class="nav-link active" onclick="showSection('hero'); return false;">Home</a></li>
+      <li><a href="#emergency-profile" class="nav-link" onclick="showSection('emergency-profile'); return false;">User Profile</a></li>
+      <li><a href="#feed" class="nav-link" onclick="showSection('feed'); return false;">Community</a></li>
+      <li><a href="#marketplace" class="nav-link" onclick="showSection('marketplace'); return false;">Marketplace</a></li>
+      <li><a href="#sos" class="nav-link nav-sos" onclick="showSection('sos'); return false;">🛡 SOS</a></li>
+    </ul>
+    <button class="nav-cta" onclick="showSection('auth'); return false;">Get Started</button>
+    <button class="nav-mobile-toggle" onclick="toggleMobileMenu()">☰</button>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 0 – AUTH / LOGIN
+═══════════════════════════════════════════════════════════ -->
+<section class="screen" id="auth">
+  <div class="hero-content" style="max-width: 480px; margin: 60px auto; background: rgba(16, 24, 39, 0.7); padding: 40px; border-radius: 24px; border: 1px solid rgba(79, 143, 255, 0.2); backdrop-filter: blur(20px);">
+    <h2 class="screen-title" style="text-align: center; font-size: 2rem; margin-bottom: 8px;">Welcome to <span class="gradient-text">LocalConnect</span></h2>
+    <p class="screen-subtitle" style="text-align: center; margin-bottom: 32px;">Enter your email to join the neighborhood</p>
+
+    <form id="loginForm" onsubmit="handleLogin(event)" style="display: flex; flex-direction: column; gap: 20px;">
+      
+      <!-- Step 1: Email & Details -->
+      <div id="authStep1">
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+          <label for="authName" style="color: #a0bcff; font-size: 0.9rem; font-weight: 500;">Full Name</label>
+          <input type="text" id="authName" placeholder="e.g. Rahul Kumar" required style="width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(79,143,255,0.3); background: rgba(4,8,15,0.6); color: #fff; font-family: 'Inter', sans-serif; font-size: 1rem; outline: none; transition: 0.2s;" onfocus="this.style.borderColor='#4f8fff'" onblur="this.style.borderColor='rgba(79,143,255,0.3)'">
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px;">
+          <label for="authEmail" style="color: #a0bcff; font-size: 0.9rem; font-weight: 500;">Email Address</label>
+          <input type="email" id="authEmail" placeholder="you@example.com" required style="width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(79,143,255,0.3); background: rgba(4,8,15,0.6); color: #fff; font-family: 'Inter', sans-serif; font-size: 1rem; outline: none; transition: 0.2s;" onfocus="this.style.borderColor='#4f8fff'" onblur="this.style.borderColor='rgba(79,143,255,0.3)'">
+        </div>
+        
+        <button type="button" class="btn-primary" onclick="requestOtp()" style="width: 100%; padding: 16px; font-size: 1.1rem; border-radius: 12px;" id="sendOtpBtn">Send Login Code</button>
+      </div>
+
+      <!-- Step 2: OTP & Location -->
+      <div id="authStep2" style="display: none;">
+        <div style="padding: 12px 16px; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); color: #86efac; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; text-align: center;" id="otpSentMsg">
+          Code sent to your email!
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px;">
+          <label for="authOtp" style="color: #a0bcff; font-size: 0.9rem; font-weight: 500;">6-Digit OTP</label>
+          <input type="text" id="authOtp" placeholder="123456" maxlength="6" style="width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(79,143,255,0.3); background: rgba(4,8,15,0.6); color: #fff; font-family: 'Inter', sans-serif; font-size: 1.2rem; letter-spacing: 4px; text-align: center; outline: none; transition: 0.2s;" onfocus="this.style.borderColor='#4f8fff'" onblur="this.style.borderColor='rgba(79,143,255,0.3)'">
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px;">
+          <label style="color: #a0bcff; font-size: 0.9rem; font-weight: 500;">Your Location (Required for LocalConnect)</label>
+          <button type="button" class="btn-ghost" id="locationBtn" onclick="getLocation()" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; border: 1px dashed rgba(79,143,255,0.5);">
+            <span>📍</span> <span>Verify My Location</span>
+          </button>
+          <input type="hidden" id="authLat" value="">
+          <input type="hidden" id="authLng" value="">
+          <p id="locationStatus" style="font-size: 0.8rem; color: #9ca3af; text-align: center; margin-top: 4px;">We use your location to connect you with nearby services and neighbors.</p>
+        </div>
+
+        <button type="submit" class="btn-primary" style="width: 100%; padding: 16px; font-size: 1.1rem; border-radius: 12px;" id="loginSubmitBtn" disabled>Log In</button>
+        <button type="button" class="btn-ghost" onclick="resetLogin()" style="width: 100%; margin-top: 12px; border: none; font-size: 0.9rem; background: transparent;">← Back</button>
+      </div>
+      
+    </form>
+
+    <!-- Admin Login -->
+    <div style="text-align:center; margin-top:20px; padding-top:20px; border-top:1px solid rgba(79,143,255,0.15);">
+      <p style="font-size:0.8rem; color:#4a6080; margin-bottom:10px;">Platform Administrator?</p>
+      <button onclick="openAdminLogin()" style="padding:10px 28px; border-radius:999px; background:rgba(159,122,234,0.12); border:1px solid rgba(159,122,234,0.3); color:#c4b5fd; font-size:0.85rem; font-weight:600; cursor:pointer; transition:all 0.3s;" onmouseover="this.style.background='rgba(159,122,234,0.22)'" onmouseout="this.style.background='rgba(159,122,234,0.12)'">⚙ Admin Login</button>
+    </div>
+
+    <!-- Admin Password Modal -->
+    <div id="adminLoginModal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(4,8,15,0.85); backdrop-filter:blur(10px); align-items:center; justify-content:center;">
+      <div style="background:rgba(10,18,35,0.97); border:1px solid rgba(159,122,234,0.3); border-radius:24px; padding:40px 36px; max-width:380px; width:90%; box-shadow:0 0 60px rgba(159,122,234,0.2), 0 20px 60px rgba(0,0,0,0.6); position:relative;">
+        <div style="text-align:center; margin-bottom:28px;">
+          <div style="width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#9f7aea,#6d28d9); display:flex; align-items:center; justify-content:center; font-size:1.6rem; margin:0 auto 14px;">⚙</div>
+          <h3 style="font-size:1.3rem; font-weight:800; color:#e8edf7; margin-bottom:6px;">Admin Access</h3>
+          <p style="font-size:0.82rem; color:#4a6080;">Enter your admin password to continue</p>
+        </div>
+        <div style="margin-bottom:20px;">
+          <input type="password" id="adminPassInput" placeholder="Enter password" onkeydown="if(event.key==='Enter')verifyAdminPass()" style="width:100%; padding:14px 16px; border-radius:12px; border:1px solid rgba(159,122,234,0.3); background:rgba(4,8,15,0.6); color:#fff; font-size:1rem; outline:none; letter-spacing:0.1em; font-family:'Inter',sans-serif; box-sizing:border-box;" onfocus="this.style.borderColor='#9f7aea'" onblur="this.style.borderColor='rgba(159,122,234,0.3)'" />
+          <p id="adminPassError" style="font-size:0.78rem; color:#f87171; margin-top:8px; text-align:center; display:none;">❌ Incorrect password. Try again.</p>
+        </div>
+        <button onclick="verifyAdminPass()" style="width:100%; padding:14px; border-radius:12px; background:linear-gradient(135deg,#9f7aea,#6d28d9); border:none; color:#fff; font-size:1rem; font-weight:700; cursor:pointer;">Unlock Dashboard</button>
+        <button onclick="closeAdminLogin()" style="width:100%; padding:10px; margin-top:10px; border-radius:12px; background:transparent; border:none; color:#4a6080; font-size:0.85rem; cursor:pointer;">Cancel</button>
+        <p style="font-size:0.7rem; color:#2a3040; text-align:center; margin-top:16px;">Default: admin@123</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 1 – HERO LANDING PAGE
+═══════════════════════════════════════════════════════════ -->
+<section class="screen active" id="hero">
+
+  <!-- Floating city map hologram -->
+  <div class="hero-content">
+    <div class="hero-badge">🌐 Next-Gen Community Platform</div>
+    <h1 class="hero-title">Your Neighborhood,<br /><span class="gradient-text">Reimagined</span></h1>
+    <p class="hero-subtitle">Connect with neighbors, access local services, and stay safe — all in one futuristic super-app built for vibrant communities.</p>
+
+    <div class="hero-cta-group">
+      <button class="btn-primary" onclick="showSection('feed'); return false;">Explore Community</button>
+      <button class="btn-ghost" onclick="showSection('marketplace'); return false;">Browse Services</button>
+    </div>
+  </div>
+
+  <!-- Holographic city map -->
+  <div class="hero-map-box" id="homeMap" style="perspective:1000px; position:relative; overflow:hidden; border-radius:24px; border:1px solid rgba(79,143,255,0.2); box-shadow:inset 0 0 40px rgba(0,0,0,0.8), 0 0 40px rgba(79,143,255,0.1);">
+    <div id="mapContainer" style="width:100%; height:100%; position:absolute; top:0; left:0;"></div>
+    <div style="position:absolute; inset:0; pointer-events:none; background:radial-gradient(circle at center, transparent 40%, #060b14 100%);"></div>
+    <button class="sos-float-btn" id="heroSos" onclick="showSection('sos')" style="z-index:10; transform:translateZ(20px);">
+      <span class="sos-ring sos-ring-1"></span>
+      <span class="sos-ring sos-ring-2"></span>
+      <span class="sos-ring sos-ring-3"></span>
+      <span class="sos-icon">🆘</span>
+      <span class="sos-label">SOS</span>
+    </button>
+  </div>
+
+  <!-- Three feature cards floating below -->
+  <div class="hero-feature-cards">
+    <!-- Community Feed Card -->
+    <div class="feature-card fc-community" onclick="showSection('feed'); return false;">
+      <div class="fc-orbits">
+        <div class="orbit-wrapper">
+          <span class="orbit-avatar" style="--angle:0deg; --color:#4f8fff">A</span>
+          <span class="orbit-avatar" style="--angle:120deg; --color:#9f7aea">B</span>
+          <span class="orbit-avatar" style="--angle:240deg; --color:#22c55e">C</span>
+        </div>
+        <div class="orbit-center">👥</div>
+      </div>
+      <div class="fc-body">
+        <h3>Community Feed</h3>
+        <p>Stay connected with neighbors and local events in real time.</p>
+        <span class="fc-tag">Social ↗</span>
+      </div>
+    </div>
+
+    <!-- Marketplace Card -->
+    <div class="feature-card fc-market" onclick="showSection('marketplace'); return false;">
+      <div class="fc-icons-grid">
+        <span class="fi-icon" style="--c:#4f8fff">🔧</span>
+        <span class="fi-icon" style="--c:#9f7aea">⚡</span>
+        <span class="fi-icon" style="--c:#22c55e">🛒</span>
+        <span class="fi-icon" style="--c:#fbbf24">🚚</span>
+        <span class="fi-icon" style="--c:#f87171">🧹</span>
+        <span class="fi-icon" style="--c:#34d399">📚</span>
+      </div>
+      <div class="fc-body">
+        <h3>Local Marketplace</h3>
+        <p>Hire trusted local service providers and shop neighbourhood stores.</p>
+        <span class="fc-tag">Services ↗</span>
+      </div>
+    </div>
+
+    <!-- Emergency Hub Card -->
+    <div class="feature-card fc-emergency" onclick="showSection('sos'); return false;">
+      <div class="fc-shield">
+        <span class="shield-pulse"></span>
+        <span class="shield-icon">🛡️</span>
+        <div class="heartbeat-line">
+          <svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg">
+            <polyline points="0,20 20,20 30,5 40,35 50,20 60,20 70,15 80,25 90,20 120,20" fill="none" stroke="#f87171" stroke-width="2"/>
+          </svg>
+        </div>
+      </div>
+      <div class="fc-body">
+        <h3>Emergency Hub</h3>
+        <p>One-tap emergency response with neighborhood first responders.</p>
+        <span class="fc-tag emergency-tag">Alert ↗</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats strip -->
+  <div class="stats-strip">
+    <div class="stat-item"><span class="stat-number">48K+</span><span class="stat-label">Neighbors</span></div>
+    <div class="stat-divider"></div>
+    <div class="stat-item"><span class="stat-number">2,300+</span><span class="stat-label">Service Providers</span></div>
+    <div class="stat-divider"></div>
+    <div class="stat-item"><span class="stat-number">99.9%</span><span class="stat-label">Emergency Uptime</span></div>
+    <div class="stat-divider"></div>
+    <div class="stat-item"><span class="stat-number">12 sec</span><span class="stat-label">Avg Response</span></div>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MAP SECTION – below hero
+═══════════════════════════════════════════════════════════ -->
+<section class="screen" id="map-section" style="display:none; padding:80px 24px 60px; max-width:1200px; margin:0 auto;">
+  <div style="text-align:center; margin-bottom:32px;">
+    <h2 class="screen-title">Live <span class="gradient-text">Neighbourhood Map</span></h2>
+    <p class="screen-subtitle">Real-time activity in your area</p>
+  </div>
+  <div class="hero-map-box" id="homeMap2" style="perspective:1000px; position:relative; overflow:hidden; border-radius:24px; border:1px solid rgba(79,143,255,0.2); box-shadow:inset 0 0 40px rgba(0,0,0,0.8), 0 0 40px rgba(79,143,255,0.1); max-width:100%; height:480px;">
+    <div id="mapContainer2" style="width:100%; height:100%; position:absolute; top:0; left:0;"></div>
+    <div style="position:absolute; inset:0; pointer-events:none; background:radial-gradient(circle at center, transparent 40%, #060b14 100%);"></div>
+    <button class="sos-float-btn" onclick="showSection('sos')" style="z-index:10; transform:translateZ(20px);">
+      <span class="sos-ring sos-ring-1"></span>
+      <span class="sos-ring sos-ring-2"></span>
+      <span class="sos-ring sos-ring-3"></span>
+      <span class="sos-icon">🆘</span>
+      <span class="sos-label">SOS</span>
+    </button>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ADMIN DASHBOARD SCREEN
+═══════════════════════════════════════════════════════════ -->
+<section class="screen" id="admin">
+  <div class="screen-header">
+    <div>
+      <h2 class="screen-title">Admin <span class="gradient-text">Dashboard</span></h2>
+      <p class="screen-subtitle">Real-time platform traffic &amp; health overview</p>
+    </div>
+    <button class="nav-cta" onclick="showSection('hero')" style="font-size:0.85rem;">← Back to App</button>
+  </div>
+
+  <!-- KPI Row -->
+  <div class="admin-kpi-row">
+    <div class="admin-kpi-card">
+      <div class="kpi-icon" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">👥</div>
+      <div class="kpi-body">
+        <span class="kpi-label">Active Users</span>
+        <span class="kpi-value" id="kpiUsers">0</span>
+        <span class="kpi-delta up">↑ 12% today</span>
+      </div>
+    </div>
+    <div class="admin-kpi-card">
+      <div class="kpi-icon" style="background:linear-gradient(135deg,#9f7aea,#6d28d9);">📍</div>
+      <div class="kpi-body">
+        <span class="kpi-label">Neighbourhoods</span>
+        <span class="kpi-value" id="kpiNeighbourhoods">0</span>
+        <span class="kpi-delta up">↑ 3 new</span>
+      </div>
+    </div>
+    <div class="admin-kpi-card">
+      <div class="kpi-icon" style="background:linear-gradient(135deg,#22c55e,#15803d);">🛒</div>
+      <div class="kpi-body">
+        <span class="kpi-label">Marketplace Orders</span>
+        <span class="kpi-value" id="kpiOrders">0</span>
+        <span class="kpi-delta up">↑ 8% this week</span>
+      </div>
+    </div>
+    <div class="admin-kpi-card">
+      <div class="kpi-icon" style="background:linear-gradient(135deg,#f87171,#b91c1c);">🚨</div>
+      <div class="kpi-body">
+        <span class="kpi-label">SOS Alerts (24h)</span>
+        <span class="kpi-value" id="kpiSos">0</span>
+        <span class="kpi-delta down">↓ 2 resolved</span>
+      </div>
+    </div>
+    <div class="admin-kpi-card">
+      <div class="kpi-icon" style="background:linear-gradient(135deg,#fbbf24,#92400e);">⚡</div>
+      <div class="kpi-body">
+        <span class="kpi-label">Avg Response (s)</span>
+        <span class="kpi-value" id="kpiResponse">0</span>
+        <span class="kpi-delta up">↑ Faster by 2s</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts + Tables Row -->
+  <div class="admin-main-row">
+
+    <!-- Traffic Chart -->
+    <div class="admin-card admin-chart-card">
+      <div class="admin-card-header">
+        <span>📈 Traffic (Last 7 Days)</span>
+        <span class="admin-live-badge">● LIVE</span>
+      </div>
+      <div class="admin-chart-area">
+        <svg id="trafficChart" viewBox="0 0 420 120" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;overflow:visible;">
+          <defs>
+            <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#4f8fff" stop-opacity="0.5"/>
+              <stop offset="100%" stop-color="#4f8fff" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <!-- Y-axis lines -->
+          <line x1="0" y1="0" x2="420" y2="0" stroke="rgba(79,143,255,0.08)" stroke-width="1"/>
+          <line x1="0" y1="30" x2="420" y2="30" stroke="rgba(79,143,255,0.08)" stroke-width="1"/>
+          <line x1="0" y1="60" x2="420" y2="60" stroke="rgba(79,143,255,0.08)" stroke-width="1"/>
+          <line x1="0" y1="90" x2="420" y2="90" stroke="rgba(79,143,255,0.08)" stroke-width="1"/>
+          <line x1="0" y1="120" x2="420" y2="120" stroke="rgba(79,143,255,0.08)" stroke-width="1"/>
+          <!-- Chart fill + line drawn by JS -->
+          <path id="chartFill" fill="url(#chartGrad)"/>
+          <polyline id="chartLine" fill="none" stroke="#4f8fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Day labels -->
+          <text x="0"   y="135" fill="#4a6080" font-size="9" font-family="Inter" text-anchor="middle">Mon</text>
+          <text x="70"  y="135" fill="#4a6080" font-size="9" font-family="Inter" text-anchor="middle">Tue</text>
+          <text x="140" y="135" fill="#4a6080" font-size="9" font-family="Inter" text-anchor="middle">Wed</text>
+          <text x="210" y="135" fill="#4a6080" font-size="9" font-family="Inter" text-anchor="middle">Thu</text>
+          <text x="280" y="135" fill="#4a6080" font-size="9" font-family="Inter" text-anchor="middle">Fri</text>
+          <text x="350" y="135" fill="#4a6080" font-size="9" font-family="Inter" text-anchor="middle">Sat</text>
+          <text x="420" y="135" fill="#4a6080" font-size="9" font-family="Inter" text-anchor="middle">Sun</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="admin-card admin-activity-card">
+      <div class="admin-card-header">
+        <span>🔔 Recent Activity</span>
+        <span class="admin-live-badge">● LIVE</span>
+      </div>
+      <ul class="admin-activity-list" id="adminActivityList">
+        <li class="activity-item">
+          <span class="act-dot" style="background:#22c55e;"></span>
+          <div><span class="act-title">New user joined – Koramangala</span><span class="act-time">2 min ago</span></div>
+        </li>
+        <li class="activity-item">
+          <span class="act-dot" style="background:#4f8fff;"></span>
+          <div><span class="act-title">Marketplace order #4821 placed</span><span class="act-time">5 min ago</span></div>
+        </li>
+        <li class="activity-item">
+          <span class="act-dot" style="background:#f87171;"></span>
+          <div><span class="act-title">SOS alert triggered – Indiranagar</span><span class="act-time">11 min ago</span></div>
+        </li>
+        <li class="activity-item">
+          <span class="act-dot" style="background:#fbbf24;"></span>
+          <div><span class="act-title">Community post flagged for review</span><span class="act-time">18 min ago</span></div>
+        </li>
+        <li class="activity-item">
+          <span class="act-dot" style="background:#9f7aea;"></span>
+          <div><span class="act-title">New service provider registered</span><span class="act-time">24 min ago</span></div>
+        </li>
+        <li class="activity-item">
+          <span class="act-dot" style="background:#22c55e;"></span>
+          <div><span class="act-title">Safety profile updated – Whitefield</span><span class="act-time">31 min ago</span></div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Bottom Row: Top Areas + Status -->
+  <div class="admin-bottom-row">
+
+    <!-- Top Active Areas -->
+    <div class="admin-card">
+      <div class="admin-card-header"><span>📍 Top Active Areas</span></div>
+      <div class="admin-bar-list">
+        <div class="admin-bar-item">
+          <span class="bar-label">Koramangala</span>
+          <div class="bar-track"><div class="bar-fill" style="width:88%; background:linear-gradient(90deg,#4f8fff,#9f7aea);"></div></div>
+          <span class="bar-val">2.4K users</span>
+        </div>
+        <div class="admin-bar-item">
+          <span class="bar-label">Indiranagar</span>
+          <div class="bar-track"><div class="bar-fill" style="width:74%; background:linear-gradient(90deg,#4f8fff,#9f7aea);"></div></div>
+          <span class="bar-val">1.9K users</span>
+        </div>
+        <div class="admin-bar-item">
+          <span class="bar-label">Whitefield</span>
+          <div class="bar-track"><div class="bar-fill" style="width:61%; background:linear-gradient(90deg,#4f8fff,#9f7aea);"></div></div>
+          <span class="bar-val">1.6K users</span>
+        </div>
+        <div class="admin-bar-item">
+          <span class="bar-label">HSR Layout</span>
+          <div class="bar-track"><div class="bar-fill" style="width:49%; background:linear-gradient(90deg,#4f8fff,#9f7aea);"></div></div>
+          <span class="bar-val">1.2K users</span>
+        </div>
+        <div class="admin-bar-item">
+          <span class="bar-label">Jayanagar</span>
+          <div class="bar-track"><div class="bar-fill" style="width:38%; background:linear-gradient(90deg,#4f8fff,#9f7aea);"></div></div>
+          <span class="bar-val">0.9K users</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- System Health -->
+    <div class="admin-card">
+      <div class="admin-card-header"><span>🖥 System Health</span></div>
+      <div class="admin-health-list">
+        <div class="health-item">
+          <span class="health-label">API Server</span>
+          <div class="health-bar-wrap"><div class="health-bar" style="width:94%; background:#22c55e;"></div></div>
+          <span class="health-pct">94%</span>
+        </div>
+        <div class="health-item">
+          <span class="health-label">Database</span>
+          <div class="health-bar-wrap"><div class="health-bar" style="width:87%; background:#22c55e;"></div></div>
+          <span class="health-pct">87%</span>
+        </div>
+        <div class="health-item">
+          <span class="health-label">Map Service</span>
+          <div class="health-bar-wrap"><div class="health-bar" style="width:99%; background:#22c55e;"></div></div>
+          <span class="health-pct">99%</span>
+        </div>
+        <div class="health-item">
+          <span class="health-label">Notifications</span>
+          <div class="health-bar-wrap"><div class="health-bar" style="width:72%; background:#fbbf24;"></div></div>
+          <span class="health-pct">72%</span>
+        </div>
+        <div class="health-item">
+          <span class="health-label">SOS Relay</span>
+          <div class="health-bar-wrap"><div class="health-bar" style="width:100%; background:#22c55e;"></div></div>
+          <span class="health-pct">100%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="admin-card">
+      <div class="admin-card-header"><span>⚡ Quick Actions</span></div>
+      <div class="admin-actions-grid">
+        <button class="admin-action-btn" onclick="openAdminBroadcast()" style="--ac:#4f8fff;">📢 Broadcast Alert</button>
+        <button class="admin-action-btn" onclick="adminExportReport(this)" style="--ac:#9f7aea;">📊 Export Report</button>
+        <button class="admin-action-btn" onclick="adminClearCache(this)" style="--ac:#22c55e;">🗑 Clear Cache</button>
+        <button class="admin-action-btn" onclick="adminBackupDB(this)" style="--ac:#fbbf24;">💾 Backup DB</button>
+        <button class="admin-action-btn" onclick="openAdminReviewPosts()" style="--ac:#f87171;">📋 Review Posts</button>
+        <button class="admin-action-btn" onclick="openAdminManageUsers()" style="--ac:#34d399;">👥 Manage Users</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ADMIN – BROADCAST MODAL
+═══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="adminBroadcastModal" onclick="closeAdminModal('adminBroadcastModal',event)">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-header">
+      <div><h3>📢 Broadcast Alert</h3><p style="font-size:0.8rem;color:#a0bcff;margin-top:2px;">Send a message to all community members</p></div>
+      <button class="modal-close" onclick="closeAdminModal('adminBroadcastModal')">✕</button>
+    </div>
+    <div class="modal-body" style="flex-direction:column;gap:14px;align-items:stretch;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;" id="broadcastTypePills">
+        <button class="avail-day active" onclick="setBroadcastType(this,'general')">📣 General</button>
+        <button class="avail-day" onclick="setBroadcastType(this,'emergency')">🚨 Emergency</button>
+        <button class="avail-day" onclick="setBroadcastType(this,'maintenance')">🔧 Maintenance</button>
+        <button class="avail-day" onclick="setBroadcastType(this,'event')">🎉 Event</button>
+      </div>
+      <input id="broadcastTitle" placeholder="Alert title…" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid rgba(79,143,255,0.3);background:rgba(4,8,15,0.7);color:#e8edf7;font-family:inherit;font-size:0.92rem;outline:none;">
+      <textarea id="broadcastMsg" rows="4" placeholder="Write your message to the community…" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid rgba(79,143,255,0.3);background:rgba(4,8,15,0.7);color:#e8edf7;font-family:inherit;font-size:0.9rem;resize:none;outline:none;line-height:1.5;"></textarea>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <input type="checkbox" id="broadcastEmail" style="accent-color:#4f8fff;width:16px;height:16px;">
+        <label for="broadcastEmail" style="font-size:0.85rem;color:#a0bcff;">Also send via email to all users</label>
+      </div>
+    </div>
+    <div class="modal-footer" style="padding-top:16px;gap:10px;">
+      <button onclick="closeAdminModal('adminBroadcastModal')" style="padding:10px 20px;border-radius:999px;border:1px solid rgba(79,143,255,0.3);background:transparent;color:#a0bcff;cursor:pointer;font-size:0.85rem;">Cancel</button>
+      <button class="compose-post-btn" id="broadcastSendBtn" onclick="sendAdminBroadcast()" style="padding:10px 24px;">📤 Send Broadcast</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ADMIN – REVIEW POSTS MODAL
+═══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="adminPostsModal" onclick="closeAdminModal('adminPostsModal',event)">
+  <div class="modal-box" style="max-width:680px;max-height:88vh;">
+    <div class="modal-header">
+      <div><h3>📋 Review Community Posts</h3><p style="font-size:0.8rem;color:#a0bcff;margin-top:2px;">Moderate and manage all community content</p></div>
+      <button class="modal-close" onclick="closeAdminModal('adminPostsModal')">✕</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+      <input id="postSearchFilter" placeholder="🔍 Search posts…" oninput="filterAdminPosts(this.value)" style="flex:1;min-width:160px;padding:9px 14px;border-radius:999px;border:1px solid rgba(79,143,255,0.25);background:rgba(4,8,15,0.7);color:#e8edf7;font-family:inherit;font-size:0.85rem;outline:none;">
+      <button onclick="loadAdminPosts()" style="padding:9px 16px;border-radius:999px;background:rgba(79,143,255,0.12);border:1px solid rgba(79,143,255,0.3);color:#a0bcff;cursor:pointer;font-size:0.82rem;">↻ Refresh</button>
+    </div>
+    <div id="adminPostsList" style="overflow-y:auto;max-height:52vh;display:flex;flex-direction:column;gap:10px;padding-right:4px;"></div>
+    <div class="modal-footer" style="padding-top:14px;border-top:1px solid rgba(79,143,255,0.08);">
+      <span id="adminPostsCount" style="font-size:0.78rem;color:#4a6080;"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ADMIN – MANAGE USERS MODAL
+═══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="adminUsersModal" onclick="closeAdminModal('adminUsersModal',event)">
+  <div class="modal-box" style="max-width:680px;max-height:88vh;">
+    <div class="modal-header">
+      <div><h3>👥 Manage Users</h3><p style="font-size:0.8rem;color:#a0bcff;margin-top:2px;">View, promote, and manage community members</p></div>
+      <button class="modal-close" onclick="closeAdminModal('adminUsersModal')">✕</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+      <input id="userSearchFilter" placeholder="🔍 Search users…" oninput="filterAdminUsers(this.value)" style="flex:1;min-width:160px;padding:9px 14px;border-radius:999px;border:1px solid rgba(79,143,255,0.25);background:rgba(4,8,15,0.7);color:#e8edf7;font-family:inherit;font-size:0.85rem;outline:none;">
+      <button onclick="loadAdminUsers()" style="padding:9px 16px;border-radius:999px;background:rgba(79,143,255,0.12);border:1px solid rgba(79,143,255,0.3);color:#a0bcff;cursor:pointer;font-size:0.82rem;">↻ Refresh</button>
+    </div>
+    <div id="adminUsersList" style="overflow-y:auto;max-height:52vh;display:flex;flex-direction:column;gap:10px;padding-right:4px;"></div>
+    <div class="modal-footer" style="padding-top:14px;border-top:1px solid rgba(79,143,255,0.08);">
+      <span id="adminUsersCount" style="font-size:0.78rem;color:#4a6080;"></span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 2 – USER PROFILE DASHBOARD
+═══════════════════════════════════════════════════════════ -->
+<section class="screen" id="emergency-profile">
+
+  <div class="screen-header">
+    <div>
+      <h2 class="screen-title">User <span class="gradient-text">Profile</span></h2>
+      <p class="screen-subtitle">Manage your personal details and app preferences</p>
+    </div>
+    <button class="nav-cta" onclick="openProfileEditModal()" style="font-size:0.85rem;">Edit Profile</button>
+  </div>
+
+  <div class="profile-layout" style="display: flex; flex-direction: column; gap: 24px;">
+
+    <!-- Top Profile Card -->
+    <div class="ep-card profile-main-card float-card" style="display: flex; gap: 24px; align-items: center; --float-delay:0s">
+      <div id="profileAvatarBig" class="profile-avatar" style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, var(--blue-400), var(--purple-600)); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 800; color: #fff; box-shadow: 0 0 20px rgba(79,143,255,0.4); flex-shrink: 0;">
+        JD
+      </div>
+      <div class="profile-info" style="flex: 1;">
+        <h3 id="profileNameBig" style="font-size: 1.8rem; font-weight: 800; margin-bottom: 4px; color: var(--text-primary);">User Name</h3>
+        <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 12px;">📍 Location</p>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <span class="meta-chip">Verified Neighbor ✓</span>
+          <span class="meta-chip">Joined Recently</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Details Grid -->
+    <div class="ep-grid">
+
+      <!-- Contact Info Card -->
+      <div class="ep-card float-card" style="--float-delay:0.3s">
+        <div class="ep-card-header">
+          <span class="ep-icon" style="background:linear-gradient(135deg,#4f8fff,#1e3a6e)">📞</span>
+          <div>
+            <h3>Contact Information</h3>
+            <p>Your primary contact details</p>
+          </div>
+        </div>
+        <div class="med-list" style="margin-bottom: 24px;">
+          <div class="med-item">
+            <span class="med-dot medication"></span>
+            <div>
+              <span class="med-label">Email Address</span>
+              <span id="profileEmailVal" class="med-value">john.doe@example.com</span>
+            </div>
+          </div>
+          <div class="med-item">
+            <span class="med-dot condition"></span>
+            <div>
+              <span class="med-label">Phone Number</span>
+              <span id="profilePhoneVal" class="med-value">+91 98765 43210</span>
+            </div>
+          </div>
+          <div class="med-item">
+            <span class="med-dot allergy"></span>
+            <div>
+              <span class="med-label">Emergency Contact</span>
+              <span id="profileEmergencyVal" class="med-value">Not Set</span>
+            </div>
+          </div>
+        </div>
+        <button class="ep-edit-btn" onclick="openProfileEditModal()">Update Details</button>
+      </div>
+
+      <!-- Activity & Preferences Card -->
+      <div class="ep-card float-card" style="--float-delay:0.6s">
+        <div class="ep-card-header">
+          <span class="ep-icon" style="background:linear-gradient(135deg,#9f7aea,#6d28d9)">⚙️</span>
+          <div>
+            <h3>Activity &amp; Settings</h3>
+            <p>Manage your account preferences</p>
+          </div>
+        </div>
+        <div class="med-list" style="margin-bottom: 24px;">
+          <div class="med-item">
+            <span class="med-dot medication"></span>
+            <div>
+              <span class="med-label">Community Posts</span>
+              <span id="profilePostsCount" class="med-value">0 Posts Published</span>
+            </div>
+          </div>
+          <div class="med-item">
+            <span class="med-dot condition"></span>
+            <div>
+              <span class="med-label">Marketplace Orders</span>
+              <span id="profileOrdersCount" class="med-value">0 Orders Completed</span>
+            </div>
+          </div>
+          <div class="med-item">
+            <span class="med-dot blood"></span>
+            <div>
+              <span class="med-label">Notification Settings</span>
+              <span id="profileNotifSettings" class="med-value">All Alerts Enabled</span>
+            </div>
+          </div>
+        </div>
+        <button class="ep-edit-btn" onclick="openSettingsModal()">Manage Settings</button>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 3 – COMMUNITY FEED
+═══════════════════════════════════════════════════════════ -->
+<section class="screen" id="feed">
+
+  <div class="screen-header">
+    <div>
+      <h2 class="screen-title">Community <span class="gradient-text">Feed</span></h2>
+      <p class="screen-subtitle">What's happening in your neighborhood right now</p>
+    </div>
+    <button class="compose-btn" onclick="openComposeModal()">✏️ Post</button>
+  </div>
+
+  <div class="feed-container">
+
+    <!-- Post 1: Floating high -->
+    <div class="feed-card" style="--rotate:-2deg; --translateY:-12px; --delay:0s">
+      <div class="post-header">
+        <div class="post-avatar av-blue">PR</div>
+        <div class="post-meta">
+          <span class="post-username">Priya Ramesh</span>
+          <span class="post-time">2 min ago · 📍 Sector 15</span>
+        </div>
+        <span class="post-badge community">Community</span>
+      </div>
+      <p class="post-text">Just found a lost golden retriever near the park! Friendly and wearing a red collar. Does anyone recognize this dog? 🐕</p>
+      <div class="post-image-placeholder">
+        <div class="img-shimmer">🐕 Found Pet Alert</div>
+      </div>
+      <div class="post-actions">
+        <button class="post-action-btn liked">❤️ 47</button>
+        <button class="post-action-btn">💬 12</button>
+        <button class="post-action-btn">🔔 Alert</button>
+        <button class="post-action-btn">↗ Share</button>
+      </div>
+    </div>
+
+    <!-- Post 2: Slight tilt other way -->
+    <div class="feed-card" style="--rotate:1.5deg; --translateY:-5px; --delay:0.15s">
+      <div class="post-header">
+        <div class="post-avatar av-purple">RK</div>
+        <div class="post-meta">
+          <span class="post-username">Rahul Kumar</span>
+          <span class="post-time">15 min ago · 📍 Maple Street</span>
+        </div>
+        <span class="post-badge alert">Safety Alert</span>
+      </div>
+      <p class="post-text">⚠️ Heads up neighbors! There's a water main break on Oak Avenue — road will be closed until evening. Please use alternate routes.</p>
+      <div class="post-actions">
+        <button class="post-action-btn liked">❤️ 89</button>
+        <button class="post-action-btn">💬 31</button>
+        <button class="post-action-btn">🔔 Alert</button>
+        <button class="post-action-btn">↗ Share</button>
+      </div>
+    </div>
+
+    <!-- Post 3 -->
+    <div class="feed-card" style="--rotate:-1deg; --translateY:-18px; --delay:0.3s">
+      <div class="post-header">
+        <div class="post-avatar av-green">SM</div>
+        <div class="post-meta">
+          <span class="post-username">Sara Mehta</span>
+          <span class="post-time">1 hr ago · 📍 Green Park</span>
+        </div>
+        <span class="post-badge event">Event</span>
+      </div>
+      <p class="post-text">🌳 Community tree planting drive this Saturday! Bring your kids, gloves, and enthusiasm. Let's make our neighborhood greener together! 🌱</p>
+      <div class="post-actions">
+        <button class="post-action-btn liked">❤️ 124</button>
+        <button class="post-action-btn">💬 45</button>
+        <button class="post-action-btn">🔔 Remind</button>
+        <button class="post-action-btn">↗ Share</button>
+      </div>
+    </div>
+
+    <!-- Post 4 -->
+    <div class="feed-card" style="--rotate:2deg; --translateY:-8px; --delay:0.45s">
+      <div class="post-header">
+        <div class="post-avatar av-orange">DJ</div>
+        <div class="post-meta">
+          <span class="post-username">Dev Joshi</span>
+          <span class="post-time">2 hr ago · 📍 Block C</span>
+        </div>
+        <span class="post-badge service">Service</span>
+      </div>
+      <p class="post-text">Recommending Rajesh from LocalConnect marketplace — fixed my leaking pipe in 30 minutes for a fair price. Five stars! ⭐⭐⭐⭐⭐</p>
+      <div class="post-actions">
+        <button class="post-action-btn">❤️ 56</button>
+        <button class="post-action-btn">💬 8</button>
+        <button class="post-action-btn">👍 Helpful</button>
+        <button class="post-action-btn">↗ Share</button>
+      </div>
+    </div>
+
+    <!-- Post 5 -->
+    <div class="feed-card" style="--rotate:-1.5deg; --translateY:-14px; --delay:0.6s">
+      <div class="post-header">
+        <div class="post-avatar av-pink">AN</div>
+        <div class="post-meta">
+          <span class="post-username">Ananya Nair</span>
+          <span class="post-time">3 hr ago · 📍 Westside</span>
+        </div>
+        <span class="post-badge community">Community</span>
+      </div>
+      <p class="post-text">Free homemade jam from my garden! First come first served — drop by 18 Rose Lane today evening 🍓</p>
+      <div class="post-actions">
+        <button class="post-action-btn liked">❤️ 203</button>
+        <button class="post-action-btn">💬 67</button>
+        <button class="post-action-btn">🔔 Alert</button>
+        <button class="post-action-btn">↗ Share</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 4 – MARKETPLACE
+═══════════════════════════════════════════════════════════ -->
+<section class="screen" id="marketplace">
+
+  <div class="screen-header">
+    <div>
+      <h2 class="screen-title">Community <span class="gradient-text">Marketplace</span></h2>
+      <p class="screen-subtitle">Share skills · Create opportunities · Grow together 🤝</p>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+      <div class="search-bar">
+        <span>🔍</span>
+        <input type="text" id="marketSearchInput" placeholder="Search services, providers…" oninput="filterMarketSearch(this.value)" />
+      </div>
+      <button class="add-skill-btn" onclick="openAddSkillModal()">
+        <span>➕</span> Add Your Skills
+      </button>
+    </div>
+  </div>
+
+  <!-- Community Concept Banner -->
+  <div class="mp-concept-strip">
+    <div class="mp-concept-card">
+      <div class="mp-concept-icon" style="background:linear-gradient(135deg,#1a3a7c,#4f8fff)">🤝</div>
+      <div>
+        <div class="mp-concept-title">Share Resources</div>
+        <div class="mp-concept-sub">Lend tools, share rides, exchange services</div>
+      </div>
+    </div>
+    <div class="mp-concept-card">
+      <div class="mp-concept-icon" style="background:linear-gradient(135deg,#3a1a7c,#9f7aea)">💡</div>
+      <div>
+        <div class="mp-concept-title">Create Opportunities</div>
+        <div class="mp-concept-sub">Offer your skills, earn from neighbors</div>
+      </div>
+    </div>
+    <div class="mp-concept-card">
+      <div class="mp-concept-icon" style="background:linear-gradient(135deg,#1a4a1a,#22c55e)">🌱</div>
+      <div>
+        <div class="mp-concept-title">Grow Together</div>
+        <div class="mp-concept-sub">124 active providers in your area</div>
+      </div>
+    </div>
+    <div class="mp-concept-card">
+      <div class="mp-concept-icon" style="background:linear-gradient(135deg,#4a2a00,#fbbf24)">🏆</div>
+      <div>
+        <div class="mp-concept-title">Trusted Community</div>
+        <div class="mp-concept-sub">All providers are verified neighbors</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Category pills -->
+  <div class="category-pills">
+    <button class="pill active" onclick="filterCategory(this,'all')">All</button>
+    <button class="pill" onclick="filterCategory(this,'plumbing')">🔧 Plumbing</button>
+    <button class="pill" onclick="filterCategory(this,'electrical')">⚡ Electrical</button>
+    <button class="pill" onclick="filterCategory(this,'food')">🍱 Food</button>
+    <button class="pill" onclick="filterCategory(this,'delivery')">🚚 Delivery</button>
+    <button class="pill" onclick="filterCategory(this,'tutoring')">📚 Tutoring</button>
+    <button class="pill" onclick="filterCategory(this,'cleaning')">🧹 Cleaning</button>
+    <button class="pill" onclick="filterCategory(this,'beauty')">💄 Beauty</button>
+  </div>
+
+  <!-- Product/Service Grid -->
+  <div class="market-grid" id="marketGrid">
+
+    <div class="market-card float-card" data-cat="plumbing" data-service="Emergency Pipe Repair" data-price="₹299/hr" data-rating="4.9" data-reviews="128" style="--float-delay:0s" onclick="openProviderModal(this)">
+      <div class="mc-img mc-img-plumbing">🔧</div>
+      <div class="mc-body">
+        <div class="mc-category">Plumbing</div>
+        <h4 class="mc-title">Emergency Pipe Repair</h4>
+        <div class="mc-meta">
+          <span class="mc-price">₹299/hr</span>
+          <span class="mc-rating">⭐ 4.9 (128)</span>
+        </div>
+        <div class="mc-footer">
+          <span class="mc-distance">📍 0.8 km away</span>
+          <button class="mc-book-btn" onclick="event.stopPropagation();openProviderModal(this.closest('.market-card'))">View Providers</button>
+        </div>
+      </div>
+      <div class="mc-provider-count">👷 6 Available</div>
+    </div>
+
+    <div class="market-card float-card" data-cat="electrical" data-service="Home Wiring &amp; Repair" data-price="₹450/hr" data-rating="4.8" data-reviews="96" style="--float-delay:0.1s" onclick="openProviderModal(this)">
+      <div class="mc-img mc-img-electrical">⚡</div>
+      <div class="mc-body">
+        <div class="mc-category">Electrical</div>
+        <h4 class="mc-title">Home Wiring & Repair</h4>
+        <div class="mc-meta">
+          <span class="mc-price">₹450/hr</span>
+          <span class="mc-rating">⭐ 4.8 (96)</span>
+        </div>
+        <div class="mc-footer">
+          <span class="mc-distance">📍 1.2 km away</span>
+          <button class="mc-book-btn" onclick="event.stopPropagation();openProviderModal(this.closest('.market-card'))">View Providers</button>
+        </div>
+      </div>
+      <div class="mc-provider-count">👷 4 Available</div>
+    </div>
+
+    <div class="market-card float-card" data-cat="food" data-service="Home-cooked Tiffin Service" data-price="₹120/meal" data-rating="5.0" data-reviews="312" style="--float-delay:0.2s" onclick="openProviderModal(this)">
+      <div class="mc-img mc-img-food">🍱</div>
+      <div class="mc-body">
+        <div class="mc-category">Food</div>
+        <h4 class="mc-title">Home-cooked Tiffin Service</h4>
+        <div class="mc-meta">
+          <span class="mc-price">₹120/meal</span>
+          <span class="mc-rating">⭐ 5.0 (312)</span>
+        </div>
+        <div class="mc-footer">
+          <span class="mc-distance">📍 0.3 km away</span>
+          <button class="mc-book-btn" onclick="event.stopPropagation();openProviderModal(this.closest('.market-card'))">View Providers</button>
+        </div>
+      </div>
+      <div class="mc-provider-count">👷 9 Available</div>
+    </div>
+
+    <div class="market-card float-card" data-cat="delivery" data-service="Grocery &amp; Parcel Delivery" data-price="₹49/trip" data-rating="4.7" data-reviews="87" style="--float-delay:0.3s" onclick="openProviderModal(this)">
+      <div class="mc-img mc-img-delivery">🚚</div>
+      <div class="mc-body">
+        <div class="mc-category">Delivery</div>
+        <h4 class="mc-title">Grocery & Parcel Delivery</h4>
+        <div class="mc-meta">
+          <span class="mc-price">₹49/trip</span>
+          <span class="mc-rating">⭐ 4.7 (87)</span>
+        </div>
+        <div class="mc-footer">
+          <span class="mc-distance">📍 0.5 km away</span>
+          <button class="mc-book-btn" onclick="event.stopPropagation();openProviderModal(this.closest('.market-card'))">View Providers</button>
+        </div>
+      </div>
+      <div class="mc-provider-count">👷 12 Available</div>
+    </div>
+
+    <div class="market-card float-card" data-cat="tutoring" data-service="Math &amp; Science Tutor" data-price="₹350/hr" data-rating="4.9" data-reviews="54" style="--float-delay:0.4s" onclick="openProviderModal(this)">
+      <div class="mc-img mc-img-tutoring">📚</div>
+      <div class="mc-body">
+        <div class="mc-category">Tutoring</div>
+        <h4 class="mc-title">Math & Science Tutor (Gr 6–10)</h4>
+        <div class="mc-meta">
+          <span class="mc-price">₹350/hr</span>
+          <span class="mc-rating">⭐ 4.9 (54)</span>
+        </div>
+        <div class="mc-footer">
+          <span class="mc-distance">📍 1.0 km away</span>
+          <button class="mc-book-btn" onclick="event.stopPropagation();openProviderModal(this.closest('.market-card'))">View Providers</button>
+        </div>
+      </div>
+      <div class="mc-provider-count">👷 5 Available</div>
+    </div>
+
+    <div class="market-card float-card" data-cat="cleaning" data-service="Deep Home Cleaning" data-price="₹699/visit" data-rating="4.8" data-reviews="142" style="--float-delay:0.5s" onclick="openProviderModal(this)">
+      <div class="mc-img mc-img-cleaning">🧹</div>
+      <div class="mc-body">
+        <div class="mc-category">Cleaning</div>
+        <h4 class="mc-title">Deep Home Cleaning</h4>
+        <div class="mc-meta">
+          <span class="mc-price">₹699/visit</span>
+          <span class="mc-rating">⭐ 4.8 (142)</span>
+        </div>
+        <div class="mc-footer">
+          <span class="mc-distance">📍 2.1 km away</span>
+          <button class="mc-book-btn" onclick="event.stopPropagation();openProviderModal(this.closest('.market-card'))">View Providers</button>
+        </div>
+      </div>
+      <div class="mc-provider-count">👷 7 Available</div>
+    </div>
+
+    <div class="market-card float-card" data-cat="beauty" data-service="Home Salon &amp; Spa" data-price="₹500/session" data-rating="4.9" data-reviews="78" style="--float-delay:0.6s" onclick="openProviderModal(this)">
+      <div class="mc-img mc-img-beauty">💄</div>
+      <div class="mc-body">
+        <div class="mc-category">Beauty</div>
+        <h4 class="mc-title">Home Salon & Spa</h4>
+        <div class="mc-meta">
+          <span class="mc-price">₹500/session</span>
+          <span class="mc-rating">⭐ 4.9 (78)</span>
+        </div>
+        <div class="mc-footer">
+          <span class="mc-distance">📍 0.9 km away</span>
+          <button class="mc-book-btn" onclick="event.stopPropagation();openProviderModal(this.closest('.market-card'))">View Providers</button>
+        </div>
+      </div>
+      <div class="mc-provider-count">👷 3 Available</div>
+    </div>
+
+    <div class="market-card float-card" data-cat="plumbing" data-service="Bathroom Fitting &amp; Repair" data-price="₹350/hr" data-rating="4.6" data-reviews="63" style="--float-delay:0.7s" onclick="openProviderModal(this)">
+      <div class="mc-img mc-img-plumbing">🚿</div>
+      <div class="mc-body">
+        <div class="mc-category">Plumbing</div>
+        <h4 class="mc-title">Bathroom Fitting & Repair</h4>
+        <div class="mc-meta">
+          <span class="mc-price">₹350/hr</span>
+          <span class="mc-rating">⭐ 4.6 (63)</span>
+        </div>
+        <div class="mc-footer">
+          <span class="mc-distance">📍 1.5 km away</span>
+          <button class="mc-book-btn" onclick="event.stopPropagation();openProviderModal(this.closest('.market-card'))">View Providers</button>
+        </div>
+      </div>
+      <div class="mc-provider-count">👷 4 Available</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PROVIDER PROFILES MODAL
+═══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="providerModal" onclick="closeProviderModal(event)">
+  <div class="modal-box provider-modal-box">
+    <div class="modal-header">
+      <div>
+        <h3 id="providerModalTitle">Available Providers</h3>
+        <p id="providerModalSubtitle" style="font-size:0.8rem;color:#a0bcff;margin-top:2px;"></p>
+      </div>
+      <button class="modal-close" onclick="closeProviderModal()">✕</button>
+    </div>
+
+    <!-- Service summary bar -->
+    <div class="provider-service-bar" id="providerServiceBar"></div>
+
+    <!-- Provider list -->
+    <div class="provider-list" id="providerList"></div>
+
+    <div class="modal-footer" style="justify-content:space-between;padding-top:16px;border-top:1px solid rgba(79,143,255,0.1);">
+      <span style="font-size:0.78rem;color:#4a6080;">✅ All providers are verified community members</span>
+      <button class="compose-post-btn" onclick="openAddSkillModal();closeProviderModal()" style="padding:10px 20px;font-size:0.85rem;">➕ Join as Provider</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ADD YOUR SKILLS MODAL
+═══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="addSkillModal" onclick="closeAddSkillModal(event)">
+  <div class="modal-box" style="max-width:500px;">
+    <div class="modal-header">
+      <div>
+        <h3>🌟 List Your Skills</h3>
+        <p style="font-size:0.8rem;color:#a0bcff;margin-top:2px;">Share your talent with the community</p>
+      </div>
+      <button class="modal-close" onclick="closeAddSkillModal()">✕</button>
+    </div>
+    <div class="modal-body" style="flex-direction:column;gap:16px;align-items:stretch;">
+
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label style="color:#a0bcff;font-size:0.82rem;font-weight:600;">Your Name *</label>
+        <input type="text" id="skillName" placeholder="e.g. Rajesh Kumar" style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(79,143,255,0.3);background:rgba(4,8,15,0.6);color:#fff;font-family:inherit;font-size:0.95rem;outline:none;transition:0.2s;" onfocus="this.style.borderColor='#4f8fff'" onblur="this.style.borderColor='rgba(79,143,255,0.3)'">
+      </div>
+
+      <div style="display:flex;gap:12px;">
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+          <label style="color:#a0bcff;font-size:0.82rem;font-weight:600;">Phone Number *</label>
+          <input type="tel" id="skillPhone" placeholder="+91 98765 43210" style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(79,143,255,0.3);background:rgba(4,8,15,0.6);color:#fff;font-family:inherit;font-size:0.95rem;outline:none;transition:0.2s;" onfocus="this.style.borderColor='#4f8fff'" onblur="this.style.borderColor='rgba(79,143,255,0.3)'">
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+          <label style="color:#a0bcff;font-size:0.82rem;font-weight:600;">Experience</label>
+          <select id="skillExp" style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(79,143,255,0.3);background:rgba(4,8,15,0.8);color:#fff;font-family:inherit;font-size:0.95rem;outline:none;transition:0.2s;" onfocus="this.style.borderColor='#4f8fff'" onblur="this.style.borderColor='rgba(79,143,255,0.3)'">
+            <option value="1">1+ years</option>
+            <option value="3" selected>3+ years</option>
+            <option value="5">5+ years</option>
+            <option value="10">10+ years</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label style="color:#a0bcff;font-size:0.82rem;font-weight:600;">Service Category *</label>
+        <select id="skillCategory" style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(79,143,255,0.3);background:rgba(4,8,15,0.8);color:#fff;font-family:inherit;font-size:0.95rem;outline:none;">
+          <option value="plumbing">🔧 Plumbing</option>
+          <option value="electrical">⚡ Electrical</option>
+          <option value="food">🍱 Food / Cooking</option>
+          <option value="delivery">🚚 Delivery</option>
+          <option value="tutoring">📚 Tutoring</option>
+          <option value="cleaning">🧹 Cleaning</option>
+          <option value="beauty">💄 Beauty & Wellness</option>
+          <option value="other">🛠 Other</option>
+        </select>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label style="color:#a0bcff;font-size:0.82rem;font-weight:600;">Your Rate</label>
+        <input type="text" id="skillRate" placeholder="e.g. ₹300/hr or ₹500/visit" style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(79,143,255,0.3);background:rgba(4,8,15,0.6);color:#fff;font-family:inherit;font-size:0.95rem;outline:none;transition:0.2s;" onfocus="this.style.borderColor='#4f8fff'" onblur="this.style.borderColor='rgba(79,143,255,0.3)'">
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label style="color:#a0bcff;font-size:0.82rem;font-weight:600;">Tell the community about your skill</label>
+        <textarea id="skillDesc" rows="3" placeholder="e.g. Expert plumber with 5 years of experience. Available on weekends..." style="width:100%;padding:12px;border-radius:10px;border:1px solid rgba(79,143,255,0.3);background:rgba(4,8,15,0.6);color:#fff;font-family:inherit;font-size:0.9rem;resize:none;outline:none;line-height:1.5;transition:0.2s;" onfocus="this.style.borderColor='#4f8fff'" onblur="this.style.borderColor='rgba(79,143,255,0.3)'"></textarea>
+      </div>
+
+      <!-- Availability toggles -->
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <label style="color:#a0bcff;font-size:0.82rem;font-weight:600;">Availability</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="availDays">
+          <button class="avail-day active" onclick="toggleDay(this)">Mon</button>
+          <button class="avail-day active" onclick="toggleDay(this)">Tue</button>
+          <button class="avail-day active" onclick="toggleDay(this)">Wed</button>
+          <button class="avail-day active" onclick="toggleDay(this)">Thu</button>
+          <button class="avail-day active" onclick="toggleDay(this)">Fri</button>
+          <button class="avail-day" onclick="toggleDay(this)">Sat</button>
+          <button class="avail-day" onclick="toggleDay(this)">Sun</button>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer" style="padding-top:16px;justify-content:flex-end;">
+      <button class="compose-post-btn" id="addSkillSubmitBtn" onclick="submitSkillListing()" style="width:100%;text-align:center;padding:14px;font-size:1rem;">
+        🚀 List on Marketplace
+      </button>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 5 – EMERGENCY ALERT SCREEN
+═══════════════════════════════════════════════════════════ -->
+<section class="screen" id="sos">
+
+  <div class="sos-screen">
+
+    <!-- Radar background -->
+    <div class="radar-container">
+      <div class="radar-ring rr-1"></div>
+      <div class="radar-ring rr-2"></div>
+      <div class="radar-ring rr-3"></div>
+      <div class="radar-sweep"></div>
+    </div>
+
+    <div class="sos-header-text">
+      <h2 class="screen-title" style="color:#fff">Emergency <span class="gradient-text-red">Response</span></h2>
+      <p class="screen-subtitle">Press SOS to instantly alert your emergency contacts and nearby neighbors</p>
+    </div>
+
+    <!-- Giant SOS Button -->
+    <div class="giant-sos-wrapper">
+      <div class="giant-sos-ring gr-1"></div>
+      <div class="giant-sos-ring gr-2"></div>
+      <div class="giant-sos-ring gr-3"></div>
+      <button class="giant-sos-btn" id="mainSosBtn" onclick="triggerSOS()">
+        <span class="gsos-icon">🆘</span>
+        <span class="gsos-label">HOLD FOR SOS</span>
+        <span class="gsos-sub">Emergency Alert</span>
+      </button>
+    </div>
+
+    <!-- Emergency contact cards floating around -->
+    <div class="emergency-contacts">
+
+      <div class="ec-card ec-police float-card" style="--float-delay:0s">
+        <div class="ec-icon">🚔</div>
+        <div class="ec-name">Police</div>
+        <div class="ec-number">100</div>
+        <button class="ec-call-btn" onclick="callEmergency('100','Police',this)">Call Now</button>
+      </div>
+
+      <div class="ec-card ec-ambulance float-card" style="--float-delay:0.25s">
+        <div class="ec-icon">🚑</div>
+        <div class="ec-name">Ambulance</div>
+        <div class="ec-number">108</div>
+        <button class="ec-call-btn" onclick="callEmergency('108','Ambulance',this)">Call Now</button>
+      </div>
+
+      <div class="ec-card ec-fire float-card" style="--float-delay:0.5s">
+        <div class="ec-icon">🚒</div>
+        <div class="ec-name">Fire Brigade</div>
+        <div class="ec-number">101</div>
+        <button class="ec-call-btn" onclick="callEmergency('101','Fire Brigade',this)">Call Now</button>
+      </div>
+
+      <div class="ec-card ec-neighbor float-card" style="--float-delay:0.75s">
+        <div class="ec-icon">🏘️</div>
+        <div class="ec-name">Nearest Neighbors</div>
+        <div class="ec-number">3 Online</div>
+        <button class="ec-call-btn" style="background:linear-gradient(135deg,#9f7aea,#6d28d9)" onclick="alertNeighbors(this)">Alert</button>
+      </div>
+
+    </div>
+
+    <!-- Recent alerts ticker -->
+    <div class="alert-ticker">
+      <span class="ticker-label">🔴 LIVE</span>
+      <div class="ticker-scroll">
+        <span>Rahul K notified 2 min ago &nbsp;•&nbsp; Police ETA 4 min &nbsp;•&nbsp; Neighbor Sara responded &nbsp;•&nbsp; All systems operational &nbsp;•&nbsp;</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     COMPOSE MODAL
+═══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="composeModal" onclick="closeComposeModal(event)">
+  <div class="modal-box" style="max-width:520px;">
+    <div class="modal-header">
+      <h3>Share with Your Community</h3>
+      <button class="modal-close" onclick="closeComposeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="compose-avatar" id="composeAvatarEl">ME</div>
+      <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+        <textarea class="compose-textarea" id="composeText" placeholder="What's happening in your neighborhood?"></textarea>
+        <!-- Photo preview area -->
+        <div id="photoPreviewArea" style="display:none; position:relative; border-radius:12px; overflow:hidden; max-height:180px;">
+          <img id="photoPreviewImg" style="width:100%; object-fit:cover; border-radius:12px; border:1px solid rgba(79,143,255,0.2);" />
+          <button onclick="removePhoto()" style="position:absolute; top:6px; right:6px; width:24px; height:24px; border-radius:50%; background:rgba(0,0,0,0.7); border:none; color:#fff; font-size:0.75rem; cursor:pointer; display:flex; align-items:center; justify-content:center;">✕</button>
+        </div>
+        <!-- Location tag display -->
+        <div id="locationTagArea" style="display:none; padding:6px 10px; border-radius:8px; background:rgba(79,143,255,0.08); border:1px solid rgba(79,143,255,0.2); font-size:0.78rem; color:#a0bcff; display:none; align-items:center; gap:6px;">
+          <span>📍</span><span id="locationTagText">Locating…</span>
+          <button onclick="removeLocation()" style="margin-left:auto; background:none; border:none; color:#4a6080; cursor:pointer; font-size:0.8rem;">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden file input -->
+    <input type="file" id="photoFileInput" accept="image/*" capture="environment" style="display:none;" onchange="handlePhotoSelected(this)" />
+
+    <!-- Tag Type Row -->
+    <div style="padding:0 0 12px; border-bottom:1px solid rgba(79,143,255,0.1); margin-bottom:14px;">
+      <p style="font-size:0.72rem; color:#4a6080; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; margin-bottom:10px;">Tag your post type</p>
+      <div style="display:flex; flex-wrap:wrap; gap:8px;" id="postTypeTags">
+        <button class="post-type-chip active" data-type="community"  data-badge="community" onclick="selectPostType(this)">👥 Community</button>
+        <button class="post-type-chip"        data-type="alert"      data-badge="alert"     onclick="selectPostType(this)">🚨 Alert</button>
+        <button class="post-type-chip"        data-type="event"      data-badge="event"     onclick="selectPostType(this)">🎉 Event</button>
+        <button class="post-type-chip"        data-type="service"    data-badge="service"   onclick="selectPostType(this)">🔧 Service</button>
+        <button class="post-type-chip"        data-type="helpful"    data-badge="community" onclick="selectPostType(this)">🤝 Helpful</button>
+        <button class="post-type-chip"        data-type="lost"       data-badge="alert"     onclick="selectPostType(this)">🔍 Lost &amp; Found</button>
+        <button class="post-type-chip"        data-type="reminder"   data-badge="event"     onclick="selectPostType(this)">🔔 Reminder</button>
+        <button class="post-type-chip"        data-type="offer"      data-badge="service"   onclick="selectPostType(this)">🎁 Offer</button>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <div class="compose-tags">
+        <button class="compose-tag" id="photoBtn" onclick="openPhotoPicker()">📷 Photo</button>
+        <button class="compose-tag" id="locationBtn2" onclick="attachLocation()">📍 Location</button>
+      </div>
+      <button class="compose-post-btn" onclick="postToFeed()">Post</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PROFILE EDIT MODAL
+═══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="profileEditModal" onclick="closeProfileEditModal(event)">
+  <div class="modal-box" style="max-width:440px;">
+    <div class="modal-header">
+      <h3>Update Contact Details</h3>
+      <button class="modal-close" onclick="closeProfileEditModal()">✕</button>
+    </div>
+    <div class="modal-body" style="flex-direction: column; gap: 16px;">
+      
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <label style="color: #a0bcff; font-size: 0.85rem; font-weight: 600;">Full Name</label>
+        <input type="text" id="editProfileName" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(79,143,255,0.3); background: rgba(4,8,15,0.6); color: #fff; font-family: 'Inter', sans-serif; font-size: 0.95rem; outline: none; transition: 0.2s;" onfocus="this.style.borderColor='#4f8fff'" onblur="this.style.borderColor='rgba(79,143,255,0.3)'">
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <label style="color: #a0bcff; font-size: 0.85rem; font-weight: 600;">Email Address</label>
+        <input type="email" id="editProfileEmail" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(79,143,255,0.3); background: rgba(4,8,15,0.6); color: #fff; font-family: 'Inter', sans-serif; font-size: 0.95rem; outline: none; transition: 0.2s;" onfocus="this.style.borderColor='#4f8fff'" onblur="this.style.borderColor='rgba(79,143,255,0.3)'">
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <label style="color: #a0bcff; font-size: 0.85rem; font-weight: 600;">Phone Number</label>
+        <input type="tel" id="editProfilePhone" placeholder="+91 00000 00000" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(79,143,255,0.3); background: rgba(4,8,15,0.6); color: #fff; font-family: 'Inter', sans-serif; font-size: 0.95rem; outline: none; transition: 0.2s;" onfocus="this.style.borderColor='#4f8fff'" onblur="this.style.borderColor='rgba(79,143,255,0.3)'">
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <label style="color: #a0bcff; font-size: 0.85rem; font-weight: 600;">Emergency Contact</label>
+        <input type="text" id="editProfileEmergency" placeholder="Name & Number" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(79,143,255,0.3); background: rgba(4,8,15,0.6); color: #fff; font-family: 'Inter', sans-serif; font-size: 0.95rem; outline: none; transition: 0.2s;" onfocus="this.style.borderColor='#4f8fff'" onblur="this.style.borderColor='rgba(79,143,255,0.3)'">
+      </div>
+
+    </div>
+    
+    <div class="modal-footer" style="justify-content: flex-end; padding-top: 16px;">
+      <button class="compose-post-btn" onclick="saveProfileEdit()" style="width: 100%; text-align: center; padding: 14px; font-size: 1rem;">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PROFILE SETTINGS MODAL
+═══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="profileSettingsModal" onclick="closeSettingsModal(event)">
+  <div class="modal-box" style="max-width:440px;">
+    <div class="modal-header">
+      <h3>Manage Settings</h3>
+      <button class="modal-close" onclick="closeSettingsModal()">✕</button>
+    </div>
+    <div class="modal-body" style="flex-direction: column; gap: 16px; align-items: stretch;">
+      
+      <label style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(10,20,40,0.5); border: 1px solid rgba(79,143,255,0.2); border-radius: 12px; cursor: pointer;">
+        <div>
+          <span style="font-weight: 700; display: block; margin-bottom: 2px;">Push Notifications</span>
+          <span style="font-size: 0.75rem; color: #a0bcff;">Enable alerts for community updates</span>
+        </div>
+        <input type="checkbox" id="settingNotifs" checked style="width: 20px; height: 20px; accent-color: var(--blue-400); cursor: pointer;">
+      </label>
+
+      <label style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(10,20,40,0.5); border: 1px solid rgba(79,143,255,0.2); border-radius: 12px; cursor: pointer;">
+        <div>
+          <span style="font-weight: 700; display: block; margin-bottom: 2px;">Location Services</span>
+          <span style="font-size: 0.75rem; color: #a0bcff;">Allow map to use your GPS</span>
+        </div>
+        <input type="checkbox" id="settingLocation" checked style="width: 20px; height: 20px; accent-color: var(--green-400); cursor: pointer;">
+      </label>
+
+    </div>
+    
+    <div class="modal-footer" style="justify-content: flex-end; padding-top: 16px;">
+      <button class="compose-post-btn" onclick="saveSettings()" style="width: 100%; text-align: center; padding: 14px; font-size: 1rem;">Save Settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SOS CONFIRMATION TOAST
+═══════════════════════════════════════════════════════════ -->
+<div class="sos-toast" id="sosToast">
+  🚨 SOS Alert Sent! Emergency contacts notified. Stay calm.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SITE FOOTER
+═══════════════════════════════════════════════════════════ -->
+<footer class="site-footer">
+
+  <!-- Glowing top border line -->
+  <div class="footer-glow-line"></div>
+
+  <div class="footer-inner">
+
+    <!-- Brand + Newsletter Column -->
+    <div class="footer-brand-col">
+      <div class="footer-logo">
+        <div class="footer-logo-orb"></div>
+        <span class="footer-logo-text">Local<span class="footer-logo-accent">Connect</span></span>
+      </div>
+      <p class="footer-tagline">Bringing neighborhoods closer — one connection at a time. 🌐</p>
+
+      <!-- Newsletter -->
+      <div class="footer-newsletter">
+        <p class="newsletter-label">📬 Stay in the loop</p>
+        <div class="newsletter-form">
+          <input type="email" class="newsletter-input" placeholder="your@email.com" id="footerEmailInput" />
+          <button class="newsletter-btn" onclick="subscribeNewsletter()">Subscribe</button>
+        </div>
+        <p class="newsletter-note" id="newsletterMsg">Get weekly neighborhood highlights & safety alerts.</p>
+      </div>
+
+      <!-- Social Icons -->
+      <div class="footer-socials">
+        <a href="javascript:void(0)" onclick="showComingSoon('X / Twitter');return false;" class="social-icon" title="Twitter / X" aria-label="Twitter">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+        <a href="javascript:void(0)" onclick="showComingSoon('Instagram');return false;" class="social-icon" title="Instagram" aria-label="Instagram">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+        </a>
+        <a href="javascript:void(0)" onclick="showComingSoon('Facebook');return false;" class="social-icon" title="Facebook" aria-label="Facebook">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        </a>
+        <a href="javascript:void(0)" onclick="showComingSoon('LinkedIn');return false;" class="social-icon" title="LinkedIn" aria-label="LinkedIn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        </a>
+        <a href="javascript:void(0)" onclick="showComingSoon('YouTube');return false;" class="social-icon" title="YouTube" aria-label="YouTube">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Links Columns -->
+    <div class="footer-links-grid">
+
+      <div class="footer-col">
+        <h4 class="footer-col-title">Product</h4>
+        <ul class="footer-link-list">
+          <li><a href="javascript:void(0)" onclick="showSection('hero');return false;">Home</a></li>
+          <li><a href="javascript:void(0)" onclick="showSection('feed');return false;">Community Feed</a></li>
+          <li><a href="javascript:void(0)" onclick="showSection('marketplace');return false;">Marketplace</a></li>
+          <li><a href="javascript:void(0)" onclick="showSection('sos');return false;">Emergency Hub</a></li>
+          <li><a href="javascript:void(0)" onclick="showSection('emergency-profile');return false;">User Profile</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-col-title">Company</h4>
+        <ul class="footer-link-list">
+          <li><a href="javascript:void(0)" onclick="openCompanyModal('about');return false;">About Us</a></li>
+          <li><a href="javascript:void(0)" onclick="openCompanyModal('mission');return false;">Our Mission</a></li>
+          <li><a href="javascript:void(0)" onclick="openCompanyModal('blog');return false;">Blog</a></li>
+          <li><a href="javascript:void(0)" onclick="openCompanyModal('careers');return false;">Careers <span class="footer-badge">Hiring</span></a></li>
+          <li><a href="javascript:void(0)" onclick="openCompanyModal('press');return false;">Press Kit</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-col-title">Support</h4>
+        <ul class="footer-link-list">
+          <li><a href="javascript:void(0)" onclick="showComingSoon('Help Center');return false;">Help Center</a></li>
+          <li><a href="javascript:void(0)" onclick="showComingSoon('Community Guidelines');return false;">Community Guidelines</a></li>
+          <li><a href="javascript:void(0)" onclick="showComingSoon('Report an Issue');return false;">Report an Issue</a></li>
+          <li><a href="javascript:void(0)" onclick="showComingSoon('Contact Us');return false;">Contact Us</a></li>
+          <li><a href="javascript:void(0)" onclick="showComingSoon('System Status');return false;">System Status <span class="footer-status-dot"></span></a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-col-title">Contact</h4>
+        <ul class="footer-link-list footer-contact-list">
+          <li><span>📧</span><a href="mailto:hello@localconnect.app">hello@localconnect.app</a></li>
+          <li><span>📞</span><a href="javascript:void(0)" onclick="showComingSoon('Phone Support');return false;">+91 80000 00000</a></li>
+          <li><span>📍</span><span>Bengaluru, Karnataka, India</span></li>
+          <li><span>🕒</span><span>Mon–Fri, 9 AM – 6 PM IST</span></li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- App Store Badges -->
+  <div class="footer-app-row">
+    <p class="footer-app-label">Get the app — launching soon 🚀</p>
+    <div class="footer-app-badges">
+      <a href="javascript:void(0)" onclick="showComingSoon('App Store');return false;" class="app-badge">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98l-.09.06c-.22.15-2.19 1.3-2.17 3.87.03 3.05 2.65 4.07 2.67 4.08-.03.07-.42 1.46-1.35 2.62M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+        <div><span>Download on the</span><strong>App Store</strong></div>
+      </a>
+      <a href="javascript:void(0)" onclick="showComingSoon('Google Play');return false;" class="app-badge">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76c.3.17.64.24.99.2l.11-.04L13.65 14l-3.4-3.4-7.07 13.16zm16.63-12.18L17.05 10l-3.4 3.4 3.41 3.41 2.77-1.56c.79-.45.79-1.63-.02-2.07zM2.89.33C2.56.53 2.34.9 2.34 1.38v21.24c0 .48.22.85.56 1.04l.1.06L13.65 14 2.89.33z"/><path d="M13.65 12L3.0.24l.11-.04c.35-.04.7.03.99.2L17.05 8l-3.4 4z"/></svg>
+        <div><span>Get it on</span><strong>Google Play</strong></div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Bottom Bar -->
+  <div class="footer-bottom">
+    <div class="footer-bottom-inner">
+      <p class="footer-copyright">
+        &copy; <span id="footerYear"></span> <strong>LocalConnect</strong>. All rights reserved. Built with ❤️ in India.
+      </p>
+      <div class="footer-legal-links">
+        <a href="javascript:void(0)" onclick="showComingSoon('Privacy Policy');return false;">Privacy Policy</a>
+        <span class="footer-dot">·</span>
+        <a href="javascript:void(0)" onclick="showComingSoon('Terms of Service');return false;">Terms of Service</a>
+        <span class="footer-dot">·</span>
+        <a href="javascript:void(0)" onclick="showComingSoon('Cookie Policy');return false;">Cookie Policy</a>
+        <span class="footer-dot">·</span>
+        <a href="javascript:void(0)" onclick="showComingSoon('Accessibility');return false;">Accessibility</a>
+      </div>
+      <div class="footer-made-with">
+        <span class="footer-india-flag">🇮🇳</span> Made for every Indian neighborhood
+      </div>
+    </div>
+  </div>
+
+</footer>
+
+<script>
+  // Set dynamic copyright year
+  document.getElementById('footerYear').textContent = new Date().getFullYear();
+
+  // ── Newsletter subscribe → real backend call ────────────
+  function subscribeNewsletter() {
+    const input = document.getElementById('footerEmailInput');
+    const btn   = document.querySelector('.newsletter-btn');
+    const msg   = document.getElementById('newsletterMsg');
+    const email = input.value.trim();
+
+    if (!email || !email.includes('@')) {
+      msg.textContent = '⚠️ Please enter a valid email address.';
+      msg.style.color = '#f87171';
+      return;
+    }
+
+    // Loading state
+    btn.disabled    = true;
+    btn.textContent = 'Sending…';
+    msg.textContent = 'Sending you a welcome email…';
+    msg.style.color = '#a0bcff';
+
+    fetch('/api/newsletter/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    })
+    .then(r => r.json())
+    .then(data => {
+      input.value     = '';
+      btn.disabled    = false;
+      btn.textContent = 'Subscribe';
+      if (data.success) {
+        msg.textContent = '✅ Subscribed! Check your inbox for a welcome email. 🎉';
+        msg.style.color = '#34d399';
+      } else {
+        msg.textContent = '⚠️ ' + (data.message || 'Could not subscribe. Try again.');
+        msg.style.color = '#f87171';
+      }
+      setTimeout(() => {
+        msg.textContent = 'Get weekly neighborhood highlights & safety alerts.';
+        msg.style.color = '';
+      }, 6000);
+    })
+    .catch(() => {
+      btn.disabled    = false;
+      btn.textContent = 'Subscribe';
+      msg.textContent = '⚠️ Network error. Please try again later.';
+      msg.style.color = '#f87171';
+    });
+  }
+
+  // ── Coming soon toast ───────────────────────────────────
+  function showComingSoon(label) {
+    // Remove existing toast if any
+    const old = document.getElementById('comingSoonToast');
+    if (old) old.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'comingSoonToast';
+    toast.innerHTML = '🚀 <strong>' + label + '</strong> — Coming Soon!';
+    toast.style.cssText = [
+      'position:fixed', 'bottom:32px', 'left:50%', 'transform:translateX(-50%) translateY(20px)',
+      'background:rgba(10,18,35,0.97)', 'border:1px solid rgba(79,143,255,0.35)',
+      'color:#e8edf7', 'padding:14px 28px', 'border-radius:999px',
+      'font-size:0.88rem', 'font-weight:600', 'z-index:99999',
+      'box-shadow:0 8px 40px rgba(0,0,0,0.5),0 0 20px rgba(79,143,255,0.2)',
+      'backdrop-filter:blur(16px)',
+      'transition:opacity 0.4s ease, transform 0.4s ease',
+      'opacity:0'
+    ].join(';');
+    document.body.appendChild(toast);
+
+    // Animate in
+    requestAnimationFrame(() => {
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateX(-50%) translateY(0)';
+    });
+
+    // Animate out & remove
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(-50%) translateY(12px)';
+      setTimeout(() => toast.remove(), 400);
+    }, 3000);
+  }
+</script>
+
+<!-- Scripts -->
+<script th:src="@{/js/localconnect.js}"></script>
+
+<!-- ═══════════════════════════════════════════════════════════
+     COMPANY INFO MODAL
+═══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="companyModal" onclick="if(event.target===this)closeCompanyModal()" style="z-index:9999;">
+  <div class="modal-box" style="max-width:620px;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;">
+    <div class="modal-header" style="flex-shrink:0;">
+      <div><h3 id="companyModalTitle">About Us</h3><p id="companyModalSub" style="font-size:0.8rem;color:#a0bcff;margin-top:2px;"></p></div>
+      <button class="modal-close" onclick="closeCompanyModal()">✕</button>
+    </div>
+    <!-- Tab pills -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap;padding:0 0 14px;flex-shrink:0;border-bottom:1px solid rgba(79,143,255,0.1);margin-bottom:16px;">
+      <button class="avail-day active" id="ctab-about"   onclick="switchCompanyTab('about')">🏢 About</button>
+      <button class="avail-day"        id="ctab-mission" onclick="switchCompanyTab('mission')">🎯 Mission</button>
+      <button class="avail-day"        id="ctab-blog"    onclick="switchCompanyTab('blog')">📝 Blog</button>
+      <button class="avail-day"        id="ctab-careers" onclick="switchCompanyTab('careers')">💼 Careers</button>
+      <button class="avail-day"        id="ctab-press"   onclick="switchCompanyTab('press')">📰 Press</button>
+    </div>
+    <div id="companyModalBody" style="overflow-y:auto;flex:1;padding-right:4px;line-height:1.7;color:#c8d8ff;font-size:0.9rem;"></div>
+  </div>
+</div>
+
+<script>
+/* ── Company Modal ───────────────────────────────────────── */
+const COMPANY_CONTENT = {
+  about: {
+    title: 'About LocalConnect',
+    sub:   'Building stronger neighborhoods since 2024',
+    html: `
+      <div style="display:flex;align-items:center;gap:18px;margin-bottom:20px;">
+        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#4f8fff,#9f7aea);display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;">🌐</div>
+        <div>
+          <h4 style="font-size:1.1rem;font-weight:800;color:#e8edf7;margin-bottom:4px;">LocalConnect Pvt. Ltd.</h4>
+          <span style="font-size:0.78rem;color:#4a6080;">Registered in Bengaluru, Karnataka, India 🇮🇳</span>
+        </div>
+      </div>
+      <p style="margin-bottom:14px;">LocalConnect is India's first <strong style="color:#e8edf7;">neighborhood super-app</strong> — a platform that combines social networking, a local marketplace, and emergency safety tools into one unified, futuristic experience.</p>
+      <p style="margin-bottom:14px;">Founded in 2024, we started with a simple belief: <em style="color:#a0bcff;">your best resources are already around you</em>. Trusted neighbors, skilled local professionals, and community responders are just a tap away.</p>
+      <p style="margin-bottom:20px;">Today, LocalConnect serves over <strong style="color:#e8edf7;">48,000+ verified neighbors</strong> across Bengaluru, with plans to expand to 50 cities by 2025.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div style="background:rgba(79,143,255,0.06);border:1px solid rgba(79,143,255,0.15);border-radius:12px;padding:14px;">
+          <div style="font-size:1.4rem;font-weight:800;color:#4f8fff;margin-bottom:4px;">48K+</div>
+          <div style="font-size:0.78rem;color:#4a6080;">Verified Neighbors</div>
+        </div>
+        <div style="background:rgba(159,122,234,0.06);border:1px solid rgba(159,122,234,0.15);border-radius:12px;padding:14px;">
+          <div style="font-size:1.4rem;font-weight:800;color:#9f7aea;margin-bottom:4px;">2,300+</div>
+          <div style="font-size:0.78rem;color:#4a6080;">Service Providers</div>
+        </div>
+        <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.15);border-radius:12px;padding:14px;">
+          <div style="font-size:1.4rem;font-weight:800;color:#22c55e;margin-bottom:4px;">99.9%</div>
+          <div style="font-size:0.78rem;color:#4a6080;">Emergency Uptime</div>
+        </div>
+        <div style="background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.15);border-radius:12px;padding:14px;">
+          <div style="font-size:1.4rem;font-weight:800;color:#fbbf24;margin-bottom:4px;">12 sec</div>
+          <div style="font-size:0.78rem;color:#4a6080;">Avg Emergency Response</div>
+        </div>
+      </div>`
+  },
+  mission: {
+    title: 'Our Mission',
+    sub:   'What drives everything we build',
+    html: `
+      <div style="background:linear-gradient(135deg,rgba(79,143,255,0.08),rgba(159,122,234,0.08));border:1px solid rgba(79,143,255,0.2);border-radius:16px;padding:20px;margin-bottom:20px;text-align:center;">
+        <div style="font-size:1.8rem;margin-bottom:10px;">🎯</div>
+        <p style="font-size:1.05rem;font-weight:600;color:#e8edf7;font-style:italic;">"To make every Indian neighborhood safer, more connected, and economically empowered through technology."</p>
+      </div>
+      <h4 style="color:#e8edf7;margin-bottom:12px;font-size:0.95rem;">Our Core Pillars</h4>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
+        <div style="display:flex;gap:14px;align-items:flex-start;">
+          <div style="width:36px;height:36px;border-radius:10px;background:rgba(79,143,255,0.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">🤝</div>
+          <div><strong style="color:#e8edf7;display:block;margin-bottom:3px;">Community First</strong><span style="font-size:0.85rem;">Every feature is designed with marginalized and underserved communities in mind. We build for real India, not just metro elites.</span></div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start;">
+          <div style="width:36px;height:36px;border-radius:10px;background:rgba(34,197,94,0.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">🔒</div>
+          <div><strong style="color:#e8edf7;display:block;margin-bottom:3px;">Safety Without Compromise</strong><span style="font-size:0.85rem;">Our SOS system operates 24/7 with &lt; 12-second response times. Safety is not a feature — it's a promise.</span></div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start;">
+          <div style="width:36px;height:36px;border-radius:10px;background:rgba(251,191,36,0.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">💡</div>
+          <div><strong style="color:#e8edf7;display:block;margin-bottom:3px;">Local Economic Growth</strong><span style="font-size:0.85rem;">By connecting skilled local professionals to their communities, we create livelihoods and keep money circulating within neighborhoods.</span></div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start;">
+          <div style="width:36px;height:36px;border-radius:10px;background:rgba(159,122,234,0.15);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">🌱</div>
+          <div><strong style="color:#e8edf7;display:block;margin-bottom:3px;">Sustainable Tech</strong><span style="font-size:0.85rem;">Our infrastructure runs on renewable energy-powered servers and we plant one tree for every 100 new users who join.</span></div>
+        </div>
+      </div>`
+  },
+  blog: {
+    title: 'LocalConnect Blog',
+    sub:   'Stories, updates, and community highlights',
+    html: `
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div style="background:rgba(4,8,15,0.5);border:1px solid rgba(79,143,255,0.12);border-radius:14px;padding:16px;cursor:pointer;" onclick="showComingSoon('Blog Post')">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <span style="font-size:0.7rem;padding:3px 8px;border-radius:999px;background:rgba(79,143,255,0.15);color:#4f8fff;font-weight:700;">FEATURED</span>
+            <span style="font-size:0.72rem;color:#4a6080;">March 10, 2025</span>
+          </div>
+          <h4 style="color:#e8edf7;font-size:0.95rem;margin-bottom:6px;">How LocalConnect Reduced Emergency Response Time by 40% in Koramangala</h4>
+          <p style="font-size:0.82rem;color:#a0bcff;">After partnering with 3 local police stations and 12 active neighborhood watch groups, our SOS relay time dropped from 20 seconds to just 12 seconds…</p>
+        </div>
+        <div style="background:rgba(4,8,15,0.5);border:1px solid rgba(79,143,255,0.12);border-radius:14px;padding:16px;cursor:pointer;" onclick="showComingSoon('Blog Post')">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <span style="font-size:0.7rem;padding:3px 8px;border-radius:999px;background:rgba(159,122,234,0.15);color:#9f7aea;font-weight:700;">COMMUNITY</span>
+            <span style="font-size:0.72rem;color:#4a6080;">March 5, 2025</span>
+          </div>
+          <h4 style="color:#e8edf7;font-size:0.95rem;margin-bottom:6px;">Meet Priya — The Plumber from Indiranagar Who Earned ₹80,000 via LocalConnect Last Month</h4>
+          <p style="font-size:0.82rem;color:#a0bcff;">Priya Sharma, a third-generation plumber, went from struggling to find clients to being fully booked 6 weeks in advance after joining our marketplace…</p>
+        </div>
+        <div style="background:rgba(4,8,15,0.5);border:1px solid rgba(79,143,255,0.12);border-radius:14px;padding:16px;cursor:pointer;" onclick="showComingSoon('Blog Post')">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <span style="font-size:0.7rem;padding:3px 8px;border-radius:999px;background:rgba(34,197,94,0.15);color:#22c55e;font-weight:700;">PRODUCT</span>
+            <span style="font-size:0.72rem;color:#4a6080;">Feb 28, 2025</span>
+          </div>
+          <h4 style="color:#e8edf7;font-size:0.95rem;margin-bottom:6px;">Introducing Community Marketplace v2.0 — Now with Skill Sharing & Provider Profiles</h4>
+          <p style="font-size:0.82rem;color:#a0bcff;">Today we're rolling out our biggest marketplace update yet. Community members can now create detailed provider profiles, set their own rates, and list availability…</p>
+        </div>
+        <div style="text-align:center;padding-top:6px;">
+          <button onclick="showComingSoon('Full Blog')" style="padding:10px 24px;border-radius:999px;background:rgba(79,143,255,0.1);border:1px solid rgba(79,143,255,0.3);color:#a0bcff;cursor:pointer;font-size:0.84rem;font-weight:600;">View All Posts →</button>
+        </div>
+      </div>`
+  },
+  careers: {
+    title: 'Careers at LocalConnect',
+    sub:   'Join us in building the neighborhood of tomorrow',
+    html: `
+      <div style="background:linear-gradient(135deg,rgba(34,197,94,0.08),rgba(79,143,255,0.08));border:1px solid rgba(34,197,94,0.2);border-radius:16px;padding:16px;margin-bottom:20px;">
+        <p style="font-size:0.9rem;color:#e8edf7;font-weight:600;margin-bottom:4px;">🚀 We're Actively Hiring!</p>
+        <p style="font-size:0.82rem;color:#a0bcff;">We're a 24-person team in Bengaluru growing fast. Remote-friendly for most roles.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+        <div style="background:rgba(4,8,15,0.5);border:1px solid rgba(79,143,255,0.12);border-radius:12px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div><strong style="color:#e8edf7;font-size:0.9rem;">Senior Backend Engineer</strong><div style="font-size:0.75rem;color:#4a6080;margin-top:2px;">Spring Boot · Java 21 · Bengaluru / Remote</div></div>
+          <button onclick="showComingSoon('Apply')" style="padding:7px 16px;border-radius:999px;background:linear-gradient(135deg,#4f8fff,#2563eb);border:none;color:#fff;cursor:pointer;font-size:0.78rem;font-weight:700;white-space:nowrap;">Apply →</button>
+        </div>
+        <div style="background:rgba(4,8,15,0.5);border:1px solid rgba(79,143,255,0.12);border-radius:12px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div><strong style="color:#e8edf7;font-size:0.9rem;">UI/UX Designer</strong><div style="font-size:0.75rem;color:#4a6080;margin-top:2px;">Figma · Motion · Full Remote</div></div>
+          <button onclick="showComingSoon('Apply')" style="padding:7px 16px;border-radius:999px;background:linear-gradient(135deg,#9f7aea,#6d28d9);border:none;color:#fff;cursor:pointer;font-size:0.78rem;font-weight:700;white-space:nowrap;">Apply →</button>
+        </div>
+        <div style="background:rgba(4,8,15,0.5);border:1px solid rgba(79,143,255,0.12);border-radius:12px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div><strong style="color:#e8edf7;font-size:0.9rem;">Android Developer</strong><div style="font-size:0.75rem;color:#4a6080;margin-top:2px;">Kotlin · Jetpack Compose · Bengaluru</div></div>
+          <button onclick="showComingSoon('Apply')" style="padding:7px 16px;border-radius:999px;background:linear-gradient(135deg,#22c55e,#15803d);border:none;color:#fff;cursor:pointer;font-size:0.78rem;font-weight:700;white-space:nowrap;">Apply →</button>
+        </div>
+        <div style="background:rgba(4,8,15,0.5);border:1px solid rgba(79,143,255,0.12);border-radius:12px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div><strong style="color:#e8edf7;font-size:0.9rem;">Community Growth Manager</strong><div style="font-size:0.75rem;color:#4a6080;margin-top:2px;">Bengaluru (on-site) · 3+ yrs experience</div></div>
+          <button onclick="showComingSoon('Apply')" style="padding:7px 16px;border-radius:999px;background:linear-gradient(135deg,#fbbf24,#d97706);border:none;color:#fff;cursor:pointer;font-size:0.78rem;font-weight:700;white-space:nowrap;">Apply →</button>
+        </div>
+      </div>
+      <div style="text-align:center;color:#4a6080;font-size:0.8rem;">📧 Also send open applications to <strong style="color:#a0bcff;">careers@localconnect.app</strong></div>`
+  },
+  press: {
+    title: 'Press Kit',
+    sub:   'Media resources and brand assets',
+    html: `
+      <p style="margin-bottom:16px;">For media enquiries, interviews, and partnership opportunities, reach us at <strong style="color:#e8edf7;">press@localconnect.app</strong></p>
+      <h4 style="color:#e8edf7;margin-bottom:12px;font-size:0.9rem;">📰 Media Coverage</h4>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+        <div style="background:rgba(4,8,15,0.5);border:1px solid rgba(79,143,255,0.1);border-radius:12px;padding:14px;">
+          <div style="font-size:0.75rem;color:#fbbf24;font-weight:700;margin-bottom:4px;">THE TIMES OF INDIA · Feb 2025</div>
+          <p style="font-size:0.85rem;color:#a0bcff;">"LocalConnect is what India's neighborhoods have been waiting for — a hyperlocal super-app that actually works."</p>
+        </div>
+        <div style="background:rgba(4,8,15,0.5);border:1px solid rgba(79,143,255,0.1);border-radius:12px;padding:14px;">
+          <div style="font-size:0.75rem;color:#4f8fff;font-weight:700;margin-bottom:4px;">YOUR STORY · Jan 2025</div>
+          <p style="font-size:0.85rem;color:#a0bcff;">"Raising the bar for community tech in India — LocalConnect's SOS response time rivals dedicated emergency services."</p>
+        </div>
+        <div style="background:rgba(4,8,15,0.5);border:1px solid rgba(79,143,255,0.1);border-radius:12px;padding:14px;">
+          <div style="font-size:0.75rem;color:#34d399;font-weight:700;margin-bottom:4px;">ECONOMIC TIMES TECH · Dec 2024</div>
+          <p style="font-size:0.85rem;color:#a0bcff;">"The startup democratizing access to skilled local labor and community safety in tier-1 and tier-2 Indian cities."</p>
+        </div>
+      </div>
+      <h4 style="color:#e8edf7;margin-bottom:12px;font-size:0.9rem;">📦 Brand Assets</h4>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button onclick="showComingSoon('Logo Pack')"    style="padding:9px 16px;border-radius:999px;background:rgba(79,143,255,0.1);border:1px solid rgba(79,143,255,0.3);color:#a0bcff;cursor:pointer;font-size:0.82rem;font-weight:600;">🎨 Logo Pack</button>
+        <button onclick="showComingSoon('Brand Guide')" style="padding:9px 16px;border-radius:999px;background:rgba(79,143,255,0.1);border:1px solid rgba(79,143,255,0.3);color:#a0bcff;cursor:pointer;font-size:0.82rem;font-weight:600;">📖 Brand Guide</button>
+        <button onclick="showComingSoon('Fact Sheet')"  style="padding:9px 16px;border-radius:999px;background:rgba(79,143,255,0.1);border:1px solid rgba(79,143,255,0.3);color:#a0bcff;cursor:pointer;font-size:0.82rem;font-weight:600;">📊 Fact Sheet</button>
+      </div>`
+  }
+};
+
+function openCompanyModal(tab) {
+  const data = COMPANY_CONTENT[tab] || COMPANY_CONTENT.about;
+  document.getElementById('companyModalTitle').textContent = data.title;
+  document.getElementById('companyModalSub').textContent   = data.sub;
+  document.getElementById('companyModalBody').innerHTML    = data.html;
+  // Update tab pills
+  Object.keys(COMPANY_CONTENT).forEach(t => {
+    const el = document.getElementById('ctab-' + t);
+    if (el) el.classList.toggle('active', t === tab);
+  });
+  document.getElementById('companyModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function switchCompanyTab(tab) {
+  const data = COMPANY_CONTENT[tab] || COMPANY_CONTENT.about;
+  document.getElementById('companyModalTitle').textContent = data.title;
+  document.getElementById('companyModalSub').textContent   = data.sub;
+  document.getElementById('companyModalBody').innerHTML    = data.html;
+  Object.keys(COMPANY_CONTENT).forEach(t => {
+    const el = document.getElementById('ctab-' + t);
+    if (el) el.classList.toggle('active', t === tab);
+  });
+}
+
+function closeCompanyModal() {
+  document.getElementById('companyModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+/* ── Hero Map Init ───────────────────────────────────────── */
+(function initHeroMap() {
+  const container = document.getElementById('mapContainer');
+  if (!container || typeof maplibregl === 'undefined') return;
+  try {
+    const map = new maplibregl.Map({
+      container: 'mapContainer',
+      style: {
+        version: 8,
+        sources: {
+          osm: {
+            type: 'raster',
+            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            tileSize: 256,
+            attribution: '© OpenStreetMap contributors'
+          }
+        },
+        layers: [{ id: 'osm', type: 'raster', source: 'osm' }]
+      },
+      center: [77.5946, 12.9716], // Bengaluru
+      zoom: 12,
+      pitch: 45,
+      bearing: -17,
+      interactive: true
+    });
+
+    // Add navigation controls
+    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+
+    // Try to locate user
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(pos => {
+        map.flyTo({
+          center: [pos.coords.longitude, pos.coords.latitude],
+          zoom: 14,
+          duration: 2000
+        });
+        new maplibregl.Marker({ color: '#4f8fff' })
+          .setLngLat([pos.coords.longitude, pos.coords.latitude])
+          .setPopup(new maplibregl.Popup({ offset: 25 }).setText('📍 You are here'))
+          .addTo(map);
+      }, () => { /* silently ignore geolocation errors */ });
+    }
+
+    // Add a few mock community markers
+    const markers = [
+      [77.5946, 12.9716, '🏘️ 12 neighbors online'],
+      [77.5980, 12.9750, '🔧 Plumber nearby'],
+      [77.5910, 12.9680, '🆘 SOS Relay active']
+    ];
+    markers.forEach(([lng, lat, text]) => {
+      new maplibregl.Marker({ color: '#9f7aea' })
+        .setLngLat([lng, lat])
+        .setPopup(new maplibregl.Popup({ offset: 20 }).setText(text))
+        .addTo(map);
+    });
+  } catch(e) {
+    // Map library may not be loaded yet; silently fail
+    console.warn('Map init error:', e);
+  }
+})();
+</script>
+</body>
+</html>
