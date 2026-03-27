@@ -659,7 +659,7 @@
   <div class="feed-container">
 
     <!-- Post 1: Floating high -->
-    <div class="feed-card" style="--rotate:-2deg; --translateY:-12px; --delay:0s">
+    <div class="feed-card" style="--rotate:0deg; --translateY:-12px; --delay:0s">
       <div class="post-header">
         <div class="post-avatar av-blue">PR</div>
         <div class="post-meta">
@@ -681,7 +681,7 @@
     </div>
 
     <!-- Post 2: Slight tilt other way -->
-    <div class="feed-card" style="--rotate:1.5deg; --translateY:-5px; --delay:0.15s">
+    <div class="feed-card" style="--rotate:0deg; --translateY:-5px; --delay:0.15s">
       <div class="post-header">
         <div class="post-avatar av-purple">RK</div>
         <div class="post-meta">
@@ -700,7 +700,7 @@
     </div>
 
     <!-- Post 3 -->
-    <div class="feed-card" style="--rotate:-1deg; --translateY:-18px; --delay:0.3s">
+    <div class="feed-card" style="--rotate:0deg; --translateY:-18px; --delay:0.3s">
       <div class="post-header">
         <div class="post-avatar av-green">SM</div>
         <div class="post-meta">
@@ -719,7 +719,7 @@
     </div>
 
     <!-- Post 4 -->
-    <div class="feed-card" style="--rotate:2deg; --translateY:-8px; --delay:0.45s">
+    <div class="feed-card" style="--rotate:0deg; --translateY:-8px; --delay:0.45s">
       <div class="post-header">
         <div class="post-avatar av-orange">DJ</div>
         <div class="post-meta">
@@ -738,7 +738,7 @@
     </div>
 
     <!-- Post 5 -->
-    <div class="feed-card" style="--rotate:-1.5deg; --translateY:-14px; --delay:0.6s">
+    <div class="feed-card" style="--rotate:0deg; --translateY:-14px; --delay:0.6s">
       <div class="post-header">
         <div class="post-avatar av-pink">AN</div>
         <div class="post-meta">
@@ -776,6 +776,9 @@
       </div>
       <button class="add-skill-btn" onclick="openAddSkillModal()">
         <span>➕</span> Add Your Skills
+      </button>
+      <button class="add-skill-btn" onclick="alert('Promote Your Business feature coming soon! 🚀')" style="background: linear-gradient(135deg, #fbbf24, #d97706); color: #fff; border: none; box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);">
+        <span>⭐</span> Promote Business
       </button>
     </div>
   </div>
@@ -1302,7 +1305,18 @@
     <!-- Brand + Newsletter Column -->
     <div class="footer-brand-col">
       <div class="footer-logo">
-        <div class="footer-logo-orb"></div>
+        <svg class="logo-svg" width="36" height="36" viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 12px; flex-shrink: 0;">
+          <rect width="120" height="100" rx="24" fill="#C1D1D8" />
+          <g transform="translate(0, 10)">
+            <circle cx="30" cy="22" r="11" fill="#293625"/>
+            <circle cx="60" cy="22" r="11" fill="#FAF3D9"/>
+            <circle cx="90" cy="22" r="11" fill="#347653"/>
+            <path d="M 19 38 C 19 38 10 70 30 82 C 45 90 55 65 55 65 C 55 65 42 35 30 38 C 25 39 19 38 19 38 Z" fill="#4F6739" />
+            <path d="M 40 65 C 45 90 75 90 80 65 C 85 40 65 30 60 30 C 55 30 35 40 40 65 Z" fill="#CC7F44" />
+            <path d="M 55 60 C 60 45 78 38 85 50 C 95 68 75 88 68 75 C 62 62 50 70 55 60 Z" fill="#FAF3D9" />
+            <path d="M 101 38 C 101 38 110 70 90 82 C 75 90 65 65 65 65 C 65 65 78 35 90 38 C 95 39 101 38 101 38 Z" fill="#439268" />
+          </g>
+        </svg>
         <span class="footer-logo-text">Local<span class="footer-logo-accent">Connect</span></span>
       </div>
       <p class="footer-tagline">Bringing neighborhoods closer — one connection at a time. 🌐</p>
@@ -1359,6 +1373,7 @@
           <li><a href="javascript:void(0)" onclick="openCompanyModal('blog');return false;">Blog</a></li>
           <li><a href="javascript:void(0)" onclick="openCompanyModal('careers');return false;">Careers <span class="footer-badge">Hiring</span></a></li>
           <li><a href="javascript:void(0)" onclick="openCompanyModal('press');return false;">Press Kit</a></li>
+          <li><a href="javascript:void(0)" onclick="alert('Promote Your Business feature coming soon! 🚀');return false;" style="color: #fbbf24; font-weight: 600;">⭐ Promote Business</a></li>
         </ul>
       </div>
 
